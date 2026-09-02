@@ -21,6 +21,8 @@ import { ProfileSetup } from "./features/profile/ProfileSetup";
 import { YangeThread } from "./features/guidance/YangeThread";
 import { deriveYangeJourney } from "./features/guidance/journey";
 import { useYange } from "./useYange";
+import { MissionDesk } from "./features/webmcp/MissionDesk";
+import { useYangeWebMcp } from "./features/webmcp/useYangeWebMcp";
 
 const confidenceLabels = [
   "Not myself",
@@ -37,6 +39,7 @@ const auraSceneTone: Record<YangeView, { energy: number; warmth: number }> = {
   wearcast: { energy: 0.96, warmth: 0.28 },
   cloud: { energy: 1, warmth: 0.2 },
   judge: { energy: 0.96, warmth: 0.48 },
+  mission: { energy: 0.78, warmth: 0.42 },
   activity: { energy: 0.72, warmth: 0.4 },
 };
 
@@ -47,6 +50,7 @@ const yangeViews = new Set<YangeView>([
   "wearcast",
   "cloud",
   "judge",
+  "mission",
   "activity",
 ]);
 
@@ -110,12 +114,15 @@ export function App() {
     stageWearCastPressure,
     runWearCast,
   } = useYange();
+  const webMcpBridge = useYangeWebMcp(state, ledger, { planCandidate, queueLaundry });
   const [activeView, setActiveView] = useState<YangeView>(initialViewFromLocation);
   const [auraOpen, setAuraOpen] = useState(false);
   const [auraEnergy, setAuraEnergy] = useState(0.82);
   const [auraWarmth, setAuraWarmth] = useState(0.46);
   const [auraStatus, setAuraStatus] = useState<AuraStatus>("starting");
-  const [profileOpen, setProfileOpen] = useState(() => !state.userProfile.onboardingCompletedAt);
+  const [profileOpen, setProfileOpen] = useState(
+    () => !state.userProfile.onboardingCompletedAt && initialViewFromLocation() !== "mission",
+  );
   const [colourAttribution, setColourAttribution] = useState<"automatic" | "loved-colour" | "colour-missed">("automatic");
   const latestAgentOutfit = Object.values(state.outfits)
     .filter((outfit) => outfit.source === "agent-planned")
@@ -155,6 +162,7 @@ export function App() {
     atelier: Object.values(state.outfits).filter((outfit) => outfit.source === "agent-planned").length,
     wearcast: wearCastDecision.risks.length || (autonomyExecution?.status === "failed" ? "!" : 0),
     activity: ledger.length,
+    mission: webMcpBridge.mission.phase === "committed" ? "✓" : webMcpBridge.pendingEvidence ? "!" : 0,
   };
   const now = new Date();
   const todayLabel = new Intl.DateTimeFormat("en-UG", {
@@ -478,6 +486,8 @@ export function App() {
             browserNotifications={browserNotifications}
             onEnableBrowserNotifications={enableBrowserNotifications}
           />
+        ) : activeView === "mission" ? (
+          <MissionDesk bridge={webMcpBridge} state={state} onSaveLook={saveLookDna} onUpdateGarment={updateWardrobeItem} />
         ) : activeView === "cloud" ? (
           <CloudProof />
         ) : activeView === "judge" ? (

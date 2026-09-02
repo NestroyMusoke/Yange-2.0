@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MULTIMODAL_CONTRACT_VERSION,
   type AnalysisImageRef,
@@ -9,11 +9,15 @@ import type { LookDna } from "@yange/domain";
 import { YangeText, YangeWordmark } from "../brand/YangeWordmark";
 import { ImageDropzone } from "./ImageDropzone";
 import type { CaptureQueue } from "./useCaptureQueue";
+import { fetchWebInspirationFile, type WebInspirationReference } from "../webmcp/webInspiration";
 
 interface LookDnaPanelProps {
   queue: CaptureQueue;
   analyzer: TestableMultimodalAnalyzer;
   onSave(look: LookDna): boolean;
+  onSaved?(look: LookDna): void;
+  webInspiration?: WebInspirationReference | null;
+  onDeclineWebInspiration?(): void;
 }
 
 function imageRef(asset: NonNullable<CaptureQueue["slots"]["inspiration"]["asset"]>): AnalysisImageRef {
@@ -28,12 +32,30 @@ function imageRef(asset: NonNullable<CaptureQueue["slots"]["inspiration"]["asset
   };
 }
 
-export function LookDnaPanel({ queue, analyzer, onSave }: LookDnaPanelProps) {
+export function LookDnaPanel({ queue, analyzer, onSave, onSaved, webInspiration, onDeclineWebInspiration }: LookDnaPanelProps) {
   const slot = queue.slots.inspiration;
   const [analysis, setAnalysis] = useState<LookDnaAnalysisV1 | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [webImportError, setWebImportError] = useState<string | null>(null);
+  const importedId = useRef<string | null>(null);
   const analyzing = slot.status === "analyzing";
+
+  useEffect(() => {
+    if (!webInspiration || importedId.current === webInspiration.id) return;
+    importedId.current = webInspiration.id;
+    const controller = new AbortController();
+    setWebImportError(null);
+    void fetchWebInspirationFile(webInspiration, controller.signal)
+      .then((file) => queue.process("inspiration", file))
+      .catch((cause) => {
+        if (controller.signal.aborted) return;
+        setWebImportError(cause instanceof Error ? cause.message : "This publisher blocked direct image access.");
+      });
+    return () => controller.abort();
+    // A reference ID represents one deliberate browser-agent handoff.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [webInspiration?.id]);
 
   async function analyze(): Promise<void> {
     if (!slot.asset) return;
@@ -67,7 +89,10 @@ export function LookDnaPanel({ queue, analyzer, onSave }: LookDnaPanelProps) {
       provenance: "ai-estimated",
       createdAt: new Date().toISOString(),
     };
-    if (onSave(look)) setSaved(true);
+    if (onSave(look)) {
+      setSaved(true);
+      onSaved?.(look);
+    }
   }
 
   async function addAnother(): Promise<void> {
@@ -93,12 +118,24 @@ export function LookDnaPanel({ queue, analyzer, onSave }: LookDnaPanelProps) {
         </div>
       </div>
 
+      {webInspiration && (
+        <aside className="web-inspiration-source" aria-live="polite">
+          <div>
+            <span className="mission-eyebrow">Received from your browser agent</span>
+            <strong>{webInspiration.sourceTitle || new URL(webInspiration.sourcePageUrl).hostname}</strong>
+            <a href={webInspiration.sourcePageUrl} target="_blank" rel="noreferrer">View original source</a>
+          </div>
+          <button type="button" className="quiet-action" onClick={onDeclineWebInspiration}>Don’t use this look</button>
+        </aside>
+      )}
+      {webImportError && <div className="error-banner analysis-error" role="alert"><strong>Direct transfer was blocked by the publisher.</strong> {webImportError} Choose or drop the image below to continue the same review safely.</div>}
+
       <div className="look-workbench">
         <div>
           <ImageDropzone
             kind="inspiration"
             title="Inspiration image"
-            description="Use a clear full-outfit image or a saved frame from social media."
+            description={webInspiration ? "The browser agent sent this public outfit image. Yange rewrites it privately before analysis." : "Use a clear full-outfit image or a saved frame from social media."}
             slot={slot}
             onFile={(file) => void queue.process("inspiration", file)}
             onDemo={() => void queue.useDemo("inspiration")}

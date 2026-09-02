@@ -1,0 +1,32 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Yange says one physical fact is missing. Ask me only for that fact instead of guessing."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "request_missing_evidence",
+        "arguments": {
+          "gapId": "gap-cream-blouse-physical-availability"
+        }
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "I cannot confirm the garment is here. Continue only if another verified path remains safe."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "inspect_mission_readiness",
+        "arguments": {}
+      }
+    ]
+  }
+]

@@ -11,6 +11,7 @@ import "./unified-system.css";
 import "./navigation.css";
 import "./brand-system.css";
 import "./guidance.css";
+import "./features/webmcp/mission.css";
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

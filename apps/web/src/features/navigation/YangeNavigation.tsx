@@ -18,6 +18,7 @@ const moreDestinations: ReadonlyArray<{
   label: string;
   description: string;
 }> = [
+  { id: "mission", label: "Mission", description: "Work with your browser agent" },
   { id: "judge", label: "Style memory", description: "See what Yange has learned" },
   { id: "activity", label: "Activity", description: "See your wardrobe history" },
   { id: "cloud", label: "Connected services", description: "Check cloud and agent connections" },

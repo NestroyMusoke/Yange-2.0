@@ -1,0 +1,46 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Help me wear this inspiration look on Friday without buying anything or ruining my clothes."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "open_wardrobe_mission",
+        "arguments": {
+          "goal": "Help me wear this inspiration look on Friday without buying anything or ruining my clothes."
+        }
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "The mission is open. Check what in my wardrobe is actually ready and tell me what is still uncertain."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "inspect_mission_readiness",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "The physical evidence is confirmed. Compare every safe way to get me ready before you change anything."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "simulate_plan_paths",
+        "arguments": {}
+      }
+    ]
+  }
+]

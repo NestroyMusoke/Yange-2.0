@@ -1,4 +1,113 @@
-# Yange
+# Yange — WebMCP Edition
+
+**Find a look anywhere online. Yange brings it home using only clothes you actually own.**
+
+This is a meaningful WebMCP rework of [Yange](https://github.com/NestroyMusoke/Yange), not a different product invented for a second challenge. Yange still turns real clothes, care-label evidence, availability, weather and personal feedback into wardrobe decisions. WebMCP now closes a loop the original product could not: **open-web inspiration → browser agent → owned wardrobe → physical garment → safe, approved plan.**
+
+> **Signature mission:** “Help me wear this inspiration look on Friday without buying anything or ruining my clothes.”
+
+While the person is viewing a compatible public outfit page, they can say **“Bring this look home with Yange.”** The browser agent carries the attributed image reference directly into Yange—no screenshot or download step. Yange fetches it without credentials, validates the real media signature, rewrites a private prepared copy, and asks the person to review the extracted Look DNA. If a publisher blocks direct image access, the same visible handoff offers local upload instead of pretending the transfer succeeded. The agent then reconstructs the look from the person's actual wardrobe and visibly pauses when it reaches a physical fact the internet cannot know.
+
+## The WebMCP rework, precisely
+
+The preserved starting point is commit [`bc3ae05`](https://github.com/NestroyMusoke/Yange/commit/bc3ae05): the submitted Agentic Hackathon version of Yange. All work on this branch after that commit is WebMCP Challenge work.
+
+| Before August 25, 2026 — existing Yange | Added for the WebMCP Challenge |
+| --- | --- |
+| Event-sourced Wardrobe Digital Twin | “Bring this look home,” a native inspiration-to-owned-wardrobe journey |
+| Garment, care-label and inspiration capture | Direct attributed web-image handoff plus the existing private capture pipeline |
+| Deterministic outfit, laundry and WearCast policies | Tool availability that changes with live mission state |
+| Existing domain commands as the only mutation authority | A real pending tool call while the person confirms physical evidence |
+| Replay-safe cloud orchestration and receipts | Three counterfactual paths before mutation |
+| Style Aura, capture, Laundry Lab and Google Cloud deployment | Prepare → visible human approval → stale-safe, replay-safe commit |
+| Human interface only | The same receipt in the human UI and structured agent output |
+
+No WebMCP tool controls Style Aura, profile settings, navigation, Mirror or arbitrary garment editing. The integration is intentionally narrow: one outcome people already want—recreate this online look from my own wardrobe—completed across the web and physical world.
+
+## Why WebMCP belongs here
+
+A conventional browser agent can understand the inspiration page but not the person's wardrobe. Yange understands the wardrobe but, before this rework, could not collaborate with an agent carrying intent from elsewhere on the web. DOM clicking would still miss the hardest boundary: neither side can know whether a garment is physically present or whether an uncertain care label is trustworthy without the person.
+
+WebMCP lets Yange divide the work by authority:
+
+```text
+Person says “Bring this look home” on an outfit page
+        │
+        ▼
+Browser agent passes source page + main public image
+        │
+        ▼
+Yange validates and privately prepares it; person saves Look DNA
+        │
+        ▼
+Agent opens a bounded owned-wardrobe mission
+        │
+        ├── enough evidence ───────────────┐
+        │                                  │
+        └── missing physical fact          │
+                 │                         │
+                 ▼                         │
+       real garment / care-label capture   │
+                 │ same call resumes       │
+                 └─────────────────────────┘
+                                  │
+                                  ▼
+                wear now / wash first / verified fallback
+                                  │
+                                  ▼
+                    prepare → person approves → commit once
+                                  │
+                                  ▼
+                 shared evidence and operation receipt
+```
+
+The critical implementation rule remains the same rule that already made Yange safe:
+
+> **AI handles ambiguity. Deterministic policy protects truth. The person owns consent.**
+
+## Eight tools—not eighty buttons
+
+| Tool | Responsibility | Authority |
+| --- | --- | --- |
+| `import_current_outfit_inspiration` | Carry the current public outfit and attribution into Yange | Open-web read; visible human review |
+| `open_wardrobe_mission` | Create one visible outcome and constraint boundary | Starts coordination only |
+| `inspect_mission_readiness` | Read a privacy-filtered projection and evidence gaps | Read-only |
+| `request_missing_evidence` | Pause visibly for one person-confirmed physical fact | Human-resolved |
+| `simulate_plan_paths` | Compare wear-now, wash-first and fallback futures | Read-only |
+| `prepare_shared_plan` | Freeze one feasible path against the current revision | No mutation |
+| `commit_approved_plan` | Commit only the plan already approved in Yange | Existing domain commands |
+| `get_mission_receipt` | Return progress or the durable shared receipt | Read-only |
+
+The available set changes with mission phase. Obsolete actions are unregistered with `AbortSignal`; inspection and simulation carry read-only hints; inspiration-derived data is marked untrusted. Approval cannot be smuggled in as a tool argument—it exists only in the visible interface and is bound to the exact plan digest and revision.
+
+## Try the WebMCP mission
+
+Until the separate WebMCP deployment URL is published, run this branch locally:
+
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
+
+Open `http://127.0.0.1:4173/?view=mission` in a WebMCP-capable browser. From a public outfit page, ask the browser agent to **“Bring this look home with Yange.”** It should call `import_current_outfit_inspiration` with the source page and main image, open Yange, and wait while you review and save the Look DNA. Continue the owned-wardrobe mission and watch the next tool call pause at the physical wardrobe boundary. In an unsupported browser—or when a publisher blocks cross-origin image delivery—the visible manual controls continue the same trusted path.
+
+Verification:
+
+```powershell
+npm.cmd test --workspace @yange/web
+npm.cmd run typecheck --workspace @yange/web
+npm.cmd run build --workspace @yange/web
+```
+
+The deterministic suite covers privacy projection, dynamic registration, unregistration, instruction-like content remaining untrusted data, human evidence gating, three-path simulation, stale approval and duplicate replay. Model-facing evaluation datasets live in [`evals/webmcp`](evals/webmcp), following Chrome's `messages` + `expectedCall` format.
+
+The complete semantic journey has also been exercised through Chrome 151's native `document.modelContext` surface—not by calling application handlers directly. See the dated [`native browser proof`](docs/hackathon-build/native-browser-proof.md) for the discovered tools, pending human handoff, phase transitions, receipt and defects caught by the run.
+
+For the exact product requirements, implementation contract and build evidence, see [`docs/hackathon-build`](docs/hackathon-build). For the pre-existing Yange architecture and story, continue below.
+
+---
+
+## The Yange foundation
 
 **Your Friday outfit depends on a shirt that is still in the laundry. Yange notices before you do.**
 

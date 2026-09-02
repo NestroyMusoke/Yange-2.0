@@ -15,6 +15,7 @@ export type YangeView =
   | "wearcast"
   | "cloud"
   | "judge"
+  | "mission"
   | "activity";
 
 interface JudgeModeProps {

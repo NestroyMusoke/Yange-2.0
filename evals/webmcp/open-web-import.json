@@ -1,0 +1,25 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "I am looking at this outfit now. Bring this look home with Yange."
+      }
+    ],
+    "pageContext": {
+      "url": "https://example.test/outfits/monochrome-look",
+      "title": "Monochrome streetwear outfit",
+      "mainImage": "https://images.example.test/outfits/monochrome-look.webp"
+    },
+    "expectedCall": [
+      {
+        "functionName": "import_current_outfit_inspiration",
+        "arguments": {
+          "sourcePageUrl": "https://example.test/outfits/monochrome-look",
+          "imageUrl": "https://images.example.test/outfits/monochrome-look.webp",
+          "sourceTitle": "Monochrome streetwear outfit"
+        }
+      }
+    ]
+  }
+]

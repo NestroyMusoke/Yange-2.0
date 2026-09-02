@@ -71,6 +71,13 @@ export function ViewIcon({ view }: { view: YangeView | "more" }) {
           <path d="m15.7 8.7 1.5 1.3-1.5 1.3" />
         </IconFrame>
       );
+    case "mission":
+      return (
+        <IconFrame>
+          <path d="M3.2 6.1h5.1l1.8 2.2 1.8-2.2h4.9v7.8h-4.9l-1.8-2.2-1.8 2.2H3.2Z" />
+          <path d="M6 8.7h2M12.2 11.3h2" />
+        </IconFrame>
+      );
     case "more":
       return (
         <IconFrame>

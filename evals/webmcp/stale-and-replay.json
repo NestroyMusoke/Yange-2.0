@@ -1,0 +1,30 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "I changed the occasion after the plan was prepared. Re-check the live wardrobe before trying to commit."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "inspect_mission_readiness",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "The approved action may have already run. Show me the existing result rather than doing it twice."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "get_mission_receipt",
+        "arguments": {}
+      }
+    ]
+  }
+]
