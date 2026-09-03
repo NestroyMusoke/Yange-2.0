@@ -82,7 +82,7 @@ The available set changes with mission phase. Obsolete actions are unregistered 
 
 ## Try the WebMCP mission
 
-Until the separate WebMCP deployment URL is published, run this branch locally:
+**[Open the live WebMCP edition](https://web-jet-one-21.vercel.app/?view=mission)** or run this branch locally:
 
 ```powershell
 npm.cmd install
