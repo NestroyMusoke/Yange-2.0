@@ -24,15 +24,45 @@ function safeHttpsUrl(value: unknown, label: string): string {
   return url.href;
 }
 
+function urlsFromInput(input: Record<string, unknown>): string[] {
+  const strings: string[] = [];
+  const visit = (value: unknown, depth = 0): void => {
+    if (depth > 3) return;
+    if (typeof value === "string") strings.push(value);
+    else if (Array.isArray(value)) value.forEach((item) => visit(item, depth + 1));
+    else if (value && typeof value === "object") Object.values(value as Record<string, unknown>).forEach((item) => visit(item, depth + 1));
+  };
+  visit(input);
+  return strings
+    .flatMap((value) => value.match(/https:\/\/[^\s<>`"']+/gi) ?? [])
+    .map((value) => value.replace(/[),.;]+$/, ""))
+    .filter((value, index, values) => values.indexOf(value) === index);
+}
+
 function boundedText(value: unknown, maximum: number): string {
   return typeof value === "string" ? value.trim().slice(0, maximum) : "";
 }
 
 export function parseWebInspiration(input: Record<string, unknown>): WebInspirationReference {
+  const discovered = urlsFromInput(input);
+  const namedSource = input.sourcePageUrl;
+  const sourceCandidates = [namedSource, ...discovered].filter((value): value is string => typeof value === "string");
+  const imageCandidates = [input.imageUrl, ...discovered].filter((value): value is string => typeof value === "string");
+  const imageValue = imageCandidates.find((value) => {
+    try { return new URL(safeHttpsUrl(value, "Image URL")).hostname.toLowerCase() === "i.pinimg.com"; } catch { return false; }
+  }) ?? imageCandidates[0];
+  const sourceValue = sourceCandidates.find((value) => {
+    try {
+      const host = new URL(safeHttpsUrl(value, "Source page URL")).hostname.toLowerCase();
+      return host === "pinterest.com" || host.endsWith(".pinterest.com");
+    } catch { return false; }
+  }) ?? sourceCandidates.find((value) => value !== imageValue);
+  if (!sourceValue) throw new Error("Source page URL is missing. Paste the Pinterest page URL into any text field.");
+  if (!imageValue) throw new Error("Image URL is missing. Paste the i.pinimg.com image address into any text field.");
   return {
     id: `web-inspiration-${crypto.randomUUID()}`,
-    sourcePageUrl: safeHttpsUrl(input.sourcePageUrl, "Source page URL"),
-    imageUrl: safeHttpsUrl(input.imageUrl, "Image URL"),
+    sourcePageUrl: safeHttpsUrl(sourceValue, "Source page URL"),
+    imageUrl: safeHttpsUrl(imageValue, "Image URL"),
     sourceTitle: boundedText(input.sourceTitle, 200),
     altText: boundedText(input.altText, 500),
   };

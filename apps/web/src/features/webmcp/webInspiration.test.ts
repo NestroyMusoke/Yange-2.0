@@ -23,6 +23,16 @@ describe("open-web inspiration handoff", () => {
     expect(reference.imageUrl).toBe("https://i.pinimg.com/736x/look.jpg");
   });
 
+  it("recovers both references when an executor puts them in one field", () => {
+    const reference = parseWebInspiration({
+      sourcePageUrl: "not a URL",
+      imageUrl: "not a URL",
+      sourceTitle: "Pinterest https://www.pinterest.com/pin/123/ image https://i.pinimg.com/736x/look.jpg",
+    });
+    expect(reference.sourcePageUrl).toBe("https://www.pinterest.com/pin/123/");
+    expect(reference.imageUrl).toBe("https://i.pinimg.com/736x/look.jpg");
+  });
+
   it.each(["http://example.com/look.jpg", "data:image/png;base64,abc", "https://user:secret@example.com/look.jpg"])("rejects unsafe image reference %s", (imageUrl) => {
     expect(() => parseWebInspiration({ sourcePageUrl: "https://example.com/look", imageUrl })).toThrow();
   });
