@@ -21,8 +21,8 @@ That gap is personal. I built the original Yange alone in Kampala after repeated
 Yange 2.0 turns “bring this look home” into one visible collaboration between a person, a browser agent, and a physical wardrobe.
 
 1. While viewing a compatible public outfit page, the person asks the browser agent to bring the look home with Yange.
-2. `import_current_outfit_inspiration` carries the public image URL and source attribution into Yange. No screenshot is required when the publisher permits direct image access.
-3. Yange fetches without cookies or referrer, validates size, MIME type and actual file signature, then rewrites a private prepared copy. Page text remains untrusted data.
+2. `import_current_outfit_inspiration` carries the public image URL and source attribution into Yange. No screenshot is required for cooperative publishers or Pinterest image URLs.
+3. Yange first fetches without cookies or referrer. When Pinterest blocks browser CORS, a same-origin Vercel function accepts only `i.pinimg.com`, rejects private DNS and unsafe redirects, enforces a 12 MB limit, and validates both MIME type and actual file signature. Arbitrary hosts are rejected rather than turning Yange into an open proxy.
 4. Gemini extracts reviewable Look DNA: palette, silhouette, key pieces, layering, styling, and occasion cues.
 5. The agent opens a bounded mission and inspects a privacy-filtered projection of the Wardrobe Digital Twin—names, state, and evidence quality, never raw photos or the event ledger.
 6. Deterministic policy compares exactly three futures: **wear now**, **wash first**, and **verified fallback**.
@@ -32,17 +32,33 @@ Yange 2.0 turns “bring this look home” into one visible collaboration betwee
 
 The result is not “AI clicks my wardrobe app.” It is shared work divided by authority: the agent handles cross-page context and multi-step planning; the person supplies reality and consent; Yange’s deterministic domain protects truth.
 
+[![An inspiration image becomes reviewable Look DNA inside Yange](https://raw.githubusercontent.com/NestroyMusoke/Yange-2.0/main/docs/submission-assets/02-inspiration-to-look-dna.png)](https://github.com/NestroyMusoke/Yange-2.0/blob/main/docs/submission-assets/02-inspiration-to-look-dna.png)
+
+*The journey begins with a look found elsewhere on the web. Yange turns it into reviewable palette, silhouette and styling cues—never imaginary wardrobe inventory.*
+
 ## Why This Matters
 
 WebMCP makes Yange materially better.
 
-**It removes the handoff tax.** The intention begins where inspiration is found. A compatible outfit image travels directly into Yange with attribution instead of forcing the person through screenshot, download, upload, and re-explanation.
+I did not add WebMCP simply to make an existing project eligible. Yange is close to my heart, so the integration had to remove a real piece of friction or it did not belong. It does: the idea now moves from the page where I discover it into the wardrobe that can act on it, without the screenshot → download → upload → explain-again ritual. More importantly, WebMCP lets the collaboration pause at the boundary between web knowledge and physical truth, ask me, and continue. That capability completes a product interaction I could not express honestly before.
+
+**It removes the handoff tax.** The intention begins where inspiration is found. A compatible outfit image—including a Pinterest image that blocks browser CORS—travels directly into Yange with attribution instead of forcing the person through screenshot, download, upload, and re-explanation.
 
 **It gives the agent useful access without giving it everything.** The agent can inspect a narrow wardrobe projection, discover missing evidence, simulate alternatives, and prepare a plan. It cannot read private image bytes, dump the event ledger, rewrite garment facts, purchase clothing, or bypass approval.
 
 **It lets the web admit where it ends.** Whether a garment is on the chair, in the basket, or already clean is a physical fact. Yange does not hide that boundary behind model confidence. It turns uncertainty into a visible request, keeps the tool call pending, and resumes from the person’s answer.
 
 This interaction was difficult before because neither side had the whole truth. WebMCP provides the semantic contract through which the browser agent and live Yange page cooperate while the person remains present.
+
+## The Heart Of Yange: A Presence That Learns
+
+I wanted Yange to feel less like a static utility and more like a friend who notices the small things. Style Aura is that idea made visible: a living WebGL atmosphere behind the interface that gradually reflects the colours associated with confident, repeated wears.
+
+It does not snap to a new palette after one tap and pretend to know the person. Each accepted interaction can move the Aura only a small step—at most 8%—using exact colour feedback, recency and repeated confidence as evidence. Familiarity is earned over time. The Aura is deliberately human-facing rather than exposed as an agent tool: WebMCP carries the work, while Style Aura lets the person *feel* that Yange is becoming theirs.
+
+[![Yange live product loop showing Style Aura learning alongside the wardrobe](https://raw.githubusercontent.com/NestroyMusoke/Yange-2.0/main/docs/submission-assets/00-yange-live-product.gif)](https://github.com/NestroyMusoke/Yange-2.0/blob/main/docs/submission-assets/00-yange-live-product.gif)
+
+*A wardrobe state change is immediate; learned familiarity is gradual. Style Aura makes that difference visible.*
 
 ## What Existed Before And What I Added
 
@@ -101,7 +117,9 @@ Public outfit page
 
 The WebMCP layer never writes directly to garment or outfit state. Existing Yange commands remain the sole mutation boundary.
 
-[![Yange production architecture](https://raw.githubusercontent.com/NestroyMusoke/Yange-2.0/main/docs/submission-assets/06-production-architecture.png)](https://github.com/NestroyMusoke/Yange-2.0/blob/main/docs/submission-assets/06-production-architecture.png)
+[![Confirmed care evidence becomes an explained, conflict-safe laundry plan](https://raw.githubusercontent.com/NestroyMusoke/Yange-2.0/main/docs/submission-assets/03-care-safe-laundry.png)](https://github.com/NestroyMusoke/Yange-2.0/blob/main/docs/submission-assets/03-care-safe-laundry.png)
+
+*The physical handoff has a consequence: once care evidence is confirmed, deterministic rules block unsafe pairings and build explained wash groups. If the evidence is uncertain, Yange holds the garment for review instead of guessing.*
 
 ## How I Used AI
 
@@ -119,7 +137,7 @@ Codex helped me research the emerging WebMCP surface, challenge an early integra
 
 ## Key Features
 
-- Direct, attributed open-web inspiration handoff with an honest fallback when a publisher blocks cross-origin access
+- Direct, attributed open-web inspiration handoff, including a locked-down Pinterest server fallback rather than an open image proxy
 - Eight narrow, phase-aware WebMCP tools instead of DOM scraping or button wrappers
 - Privacy-filtered inspection that excludes raw images and the event ledger
 - A genuine pending tool call crossing from web context into physical evidence
@@ -133,7 +151,7 @@ Codex helped me research the emerging WebMCP surface, challenge an early integra
 - Native Chrome 151 exercised the real `document.modelContext`, `getTools()`, and `executeTool()` surface—not direct React handler calls.
 - The native run observed dynamic tool replacement, one pending human handoff, exactly three plan families, a visible approval boundary, one commit, and a durable receipt.
 - That run exposed and led to fixes for optional execution contexts, registration rotation races, inappropriate shoe care-label requests, and human-friendly deadline parsing.
-- 48 web tests pass across registration, security, mission rules, privacy, stale plans, duplicate replay, media validation, navigation, and regressions.
+- 54 web tests pass across registration, server-import security, mission rules, privacy, stale plans, duplicate replay, media validation, navigation, and regressions.
 - Strict TypeScript checking and the production Vite build pass.
 - WebMCP eval fixtures cover open-web import, mission success, missing evidence, decline, stale state, and replay.
 
@@ -146,7 +164,7 @@ No account or credentials are required.
 1. Open `https://web-jet-one-21.vercel.app/?view=mission` in ChatGPT’s in-app browser or Google Chrome with WebMCP enabled.
 2. Open **Mission** from **More** if it is not already selected.
 3. On a compatible public outfit page, ask: **“Bring this look home with Yange.”** The agent should call `import_current_outfit_inspiration`, pass the current page and main image, then open Yange.
-4. Review the source attribution and image. Extract and save Look DNA. If the publisher blocks delivery, use the visible upload fallback.
+4. Review the source attribution and image. Pinterest should cross the restricted same-origin importer automatically when browser CORS fails. Extract and save Look DNA. Other blocked publishers use the visible upload fallback.
 5. Ask: **“Help me wear this inspiration look on Friday without buying anything or ruining my clothes.”**
 6. Let the agent inspect the wardrobe. When Yange asks for a physical fact, confirm it or use the care-label demo capture.
 7. Compare all three paths, prepare a feasible path, approve it in Yange, and commit it.
@@ -170,17 +188,17 @@ TODO: Add the final public YouTube URL. It must be under three minutes and inclu
 
 1. Mission thesis plus browser-agent status.
 2. Attributed outfit source after `import_current_outfit_inspiration`.
-3. Physical evidence card while the native tool execution remains pending.
-4. Three futures together: wear now, wash first, verified fallback.
-5. Prepared plan beside the separate “Approve this exact plan” action.
-6. Shared receipt beside the phase-valid tool list.
+3. Inspiration beside the extracted, reviewable Look DNA.
+4. Physical evidence card while the native tool execution remains pending.
+5. Three futures, separate human approval, and the shared receipt.
+6. Style Aura moving gradually behind the live wardrobe experience.
 
-Lead with WebMCP-specific screenshots. Use the existing product GIF only as supporting context.
+The image sequence tells one story: inspiration enters, the agent reaches uncertainty, the person supplies truth, a safe action is prepared, and Yange visibly becomes more personal over time.
 
 ## Known Limitations
 
 - WebMCP requires ChatGPT’s in-app browser or Chrome with WebMCP enabled.
-- Some publishers block direct cross-origin image access. Yange reports that boundary and offers local upload; it does not bypass publisher controls.
+- Pinterest browser CORS is handled through a restricted `i.pinimg.com` same-origin importer. Other blocked publishers receive local upload; Yange does not bypass authentication, paywalls, or publisher access controls.
 - The Vercel edition demonstrates browser collaboration; the original Google Cloud services remain documented as the pre-challenge foundation.
 - Direct ingestion supports public JPEG, PNG, and WebP images up to 12 MB.
 

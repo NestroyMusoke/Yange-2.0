@@ -10,6 +10,7 @@ export interface WebInspirationReference {
 
 const MAX_REMOTE_BYTES = 12 * 1024 * 1024;
 const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const serverImportHosts = new Set(["i.pinimg.com"]);
 
 function safeHttpsUrl(value: unknown, label: string): string {
   if (typeof value !== "string") throw new Error(`${label} is required.`);
@@ -39,14 +40,23 @@ export async function fetchWebInspirationFile(
   signal?: AbortSignal,
   fetcher: typeof fetch = fetch,
 ): Promise<File> {
-  const response = await fetcher(reference.imageUrl, {
-    method: "GET",
-    credentials: "omit",
-    mode: "cors",
-    redirect: "follow",
-    referrerPolicy: "no-referrer",
-    signal,
-  });
+  let response: Response;
+  try {
+    response = await fetcher(reference.imageUrl, {
+      method: "GET",
+      credentials: "omit",
+      mode: "cors",
+      redirect: "follow",
+      referrerPolicy: "no-referrer",
+      signal,
+    });
+    if (!response.ok && serverImportHosts.has(new URL(reference.imageUrl).hostname.toLowerCase())) {
+      response = await fetchThroughTrustedImport(reference.imageUrl, signal, fetcher);
+    }
+  } catch (cause) {
+    if (!serverImportHosts.has(new URL(reference.imageUrl).hostname.toLowerCase())) throw cause;
+    response = await fetchThroughTrustedImport(reference.imageUrl, signal, fetcher);
+  }
   if (!response.ok) throw new Error(`The source returned ${response.status}. Use the image upload fallback.`);
   if (response.url) safeHttpsUrl(response.url, "Final image URL");
   const contentType = (response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
@@ -59,4 +69,14 @@ export async function fetchWebInspirationFile(
   const file = new File([blob], `web-inspiration.${extension}`, { type: contentType, lastModified: Date.now() });
   await validateImageFile(file);
   return file;
+}
+
+async function fetchThroughTrustedImport(imageUrl: string, signal: AbortSignal | undefined, fetcher: typeof fetch): Promise<Response> {
+  return fetcher("/api/import-image", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ imageUrl }),
+    signal,
+  });
 }

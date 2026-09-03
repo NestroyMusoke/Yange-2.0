@@ -34,4 +34,34 @@ describe("open-web inspiration handoff", () => {
     const reference = parseWebInspiration({ sourcePageUrl: "https://example.com/look", imageUrl: "https://images.example.com/look.png" });
     await expect(fetchWebInspirationFile(reference, undefined, fetcher as typeof fetch)).rejects.toThrow();
   });
+
+  it("uses the same-origin importer when Pinterest blocks browser CORS", async () => {
+    const fetcher = vi.fn()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(new Response(png, {
+        status: 200,
+        headers: { "content-type": "image/png", "content-length": String(png.byteLength) },
+      }));
+    const reference = parseWebInspiration({
+      sourcePageUrl: "https://www.pinterest.com/pin/850547079653110679/",
+      imageUrl: "https://i.pinimg.com/736x/example.jpg",
+    });
+
+    const file = await fetchWebInspirationFile(reference, undefined, fetcher as typeof fetch);
+
+    expect(file.type).toBe("image/png");
+    expect(fetcher).toHaveBeenNthCalledWith(2, "/api/import-image", expect.objectContaining({
+      method: "POST",
+      credentials: "same-origin",
+      body: JSON.stringify({ imageUrl: reference.imageUrl }),
+    }));
+  });
+
+  it("does not proxy an arbitrary blocked image host", async () => {
+    const fetcher = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+    const reference = parseWebInspiration({ sourcePageUrl: "https://example.com/look", imageUrl: "https://images.example.com/look.png" });
+
+    await expect(fetchWebInspirationFile(reference, undefined, fetcher as typeof fetch)).rejects.toThrow("Failed to fetch");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
 });

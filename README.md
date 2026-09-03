@@ -6,7 +6,7 @@ This is a meaningful WebMCP rework of [Yange](https://github.com/NestroyMusoke/Y
 
 > **Signature mission:** “Help me wear this inspiration look on Friday without buying anything or ruining my clothes.”
 
-While the person is viewing a compatible public outfit page, they can say **“Bring this look home with Yange.”** The browser agent carries the attributed image reference directly into Yange—no screenshot or download step. Yange fetches it without credentials, validates the real media signature, rewrites a private prepared copy, and asks the person to review the extracted Look DNA. If a publisher blocks direct image access, the same visible handoff offers local upload instead of pretending the transfer succeeded. The agent then reconstructs the look from the person's actual wardrobe and visibly pauses when it reaches a physical fact the internet cannot know.
+While the person is viewing a compatible public outfit page, they can say **“Bring this look home with Yange.”** The browser agent carries the attributed image reference directly into Yange—no screenshot or download step. Yange first attempts a credential-free browser fetch. Because Pinterest's image CDN does not grant browser CORS access, only `i.pinimg.com` may fall back to a same-origin Vercel function that revalidates the host, public DNS, redirect chain, declared type, byte limit and actual media signature. Arbitrary hosts are rejected so the endpoint cannot become an open proxy. Yange then rewrites a private prepared copy and asks the person to review the extracted Look DNA. Other blocked publishers retain the honest local-upload fallback.
 
 ## The WebMCP rework, precisely
 
@@ -89,7 +89,7 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-Open `http://127.0.0.1:4173/?view=mission` in a WebMCP-capable browser. From a public outfit page, ask the browser agent to **“Bring this look home with Yange.”** It should call `import_current_outfit_inspiration` with the source page and main image, open Yange, and wait while you review and save the Look DNA. Continue the owned-wardrobe mission and watch the next tool call pause at the physical wardrobe boundary. In an unsupported browser—or when a publisher blocks cross-origin image delivery—the visible manual controls continue the same trusted path.
+Open `http://127.0.0.1:4173/?view=mission` in a WebMCP-capable browser. From a public outfit page, ask the browser agent to **“Bring this look home with Yange.”** It should call `import_current_outfit_inspiration` with the source page and main image, open Yange, and wait while you review and save the Look DNA. On the Vercel deployment, Pinterest images use the restricted same-origin importer when browser CORS fails. Continue the owned-wardrobe mission and watch the next tool call pause at the physical wardrobe boundary. Unsupported browsers retain the manual path; other blocked publishers retain local upload.
 
 Verification:
 
