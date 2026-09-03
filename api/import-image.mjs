@@ -76,7 +76,7 @@ async function fetchImage(initialUrl, fetchImpl, lookupImpl) {
     const response = await fetchImpl(url, {
       method: "GET",
       redirect: "manual",
-      headers: { accept: "image/avif,image/webp,image/png,image/jpeg", "user-agent": "Yange-Public-Image-Importer/1.0" },
+      headers: { accept: "image/webp,image/png,image/jpeg", "user-agent": "Yange-Public-Image-Importer/1.0" },
       signal: AbortSignal.timeout(8_000),
     });
     if ([301, 302, 303, 307, 308].includes(response.status)) {

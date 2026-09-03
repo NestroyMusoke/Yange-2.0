@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createImportHandler } from "./import-image.mjs";
+import { createImportHandler } from "../../../api/import-image.mjs";
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xdb, 0, 1]);
 const publicLookup = vi.fn(async () => [{ address: "151.101.0.84", family: 4 }]);
