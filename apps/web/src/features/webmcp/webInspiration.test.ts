@@ -14,6 +14,15 @@ describe("open-web inspiration handoff", () => {
     expect(reference.sourceTitle).toHaveLength(200);
   });
 
+  it("extracts HTTPS references from labels and pasted Markdown", () => {
+    const reference = parseWebInspiration({
+      sourcePageUrl: "sourcePageUrl: `https://www.pinterest.com/pin/123/`",
+      imageUrl: "[image](https://i.pinimg.com/736x/look.jpg)",
+    });
+    expect(reference.sourcePageUrl).toBe("https://www.pinterest.com/pin/123/");
+    expect(reference.imageUrl).toBe("https://i.pinimg.com/736x/look.jpg");
+  });
+
   it.each(["http://example.com/look.jpg", "data:image/png;base64,abc", "https://user:secret@example.com/look.jpg"])("rejects unsafe image reference %s", (imageUrl) => {
     expect(() => parseWebInspiration({ sourcePageUrl: "https://example.com/look", imageUrl })).toThrow();
   });

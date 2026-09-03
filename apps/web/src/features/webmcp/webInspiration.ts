@@ -14,7 +14,10 @@ const serverImportHosts = new Set(["i.pinimg.com"]);
 
 function safeHttpsUrl(value: unknown, label: string): string {
   if (typeof value !== "string") throw new Error(`${label} is required.`);
-  const url = new URL(value);
+  const trimmed = value.trim();
+  const httpsMatch = trimmed.match(/https:\/\/[^\s<>`"']+/i);
+  const candidate = (httpsMatch?.[0] ?? trimmed).replace(/[),.;]+$/, "");
+  const url = new URL(candidate);
   if (url.protocol !== "https:" || url.username || url.password) {
     throw new Error(`${label} must be a credential-free HTTPS URL.`);
   }
